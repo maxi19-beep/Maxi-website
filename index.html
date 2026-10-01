@@ -4,20 +4,302 @@
     <title>MAXI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body {background:#e8f0fe; font-family:Arial; text-align:center; padding-top:80px;}
-        .box {background:white; max-width:400px; margin:auto; padding:40px; border-radius:16px;}
-        h1 {color:#1a73e8; font-size:36px;}
-        p {color:#666; margin-bottom:30px;}
-        .btn-blue {display:block; background:#1a73e8; color:white; padding:14px; border-radius:8px; text-decoration:none; font-weight:bold; margin-bottom:12px;}
-        .btn-white {display:block; background:white; color:#1a73e8; border:2px solid #1a73e8; padding:14px; border-radius:8px; text-decoration:none; font-weight:bold;}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #e8f0fe;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .box {
+            background: white;
+            width: 100%;
+            max-width: 420px;
+            padding: 35px 30px;
+            border-radius: 16px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #1a73e8;
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .btn-tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-tab.inactive {
+            background: white;
+            color: #1a73e8;
+            border: 2px solid #1a73e8;
+        }
+        .btn-tab.active {
+            background: #1a73e8;
+            color: white;
+        }
+        label {
+            display: block;
+            color: #444;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .hint {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 6px;
+            font-style: italic;
+        }
+        input {
+            width: 100%;
+            padding: 14px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            margin-bottom: 4px;
+            transition: border-color 0.2s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+        input.error {
+            border-color: #d93025;
+            background: #fef0f0;
+        }
+        .error-text {
+            color: #d93025;
+            font-size: 12px;
+            margin-bottom: 16px;
+            min-height: 16px;
+        }
+        .btn-submit {
+            width: 100%;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover {
+            background: #1557b0;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #1a73e8;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="box">
-        <h1>✨ MAXI ✨</h1>
-        <p>Welcome to your trusted platform</p>
-        <a href="#" class="btn-blue">Create Account</a>
-        <a href="#" class="btn-white">Sign In</a>
+        <!-- HOME PAGE -->
+        <div id="home" class="page active">
+            <h1>✨ MAXI ✨</h1>
+            <p class="subtitle">Welcome to your trusted platform</p>
+            <a href="#" onclick="showPage('signin'); return false;" style="display:block; background:#1a73e8; color:white; padding:14px; border-radius:8px; text-decoration:none; font-weight:bold; text-align:center; margin-bottom:12px;">Sign In</a>
+            <a href="#" onclick="showPage('signup'); return false;" style="display:block; background:white; color:#1a73e8; border:2px solid #1a73e8; padding:14px; border-radius:8px; text-decoration:none; font-weight:bold; text-align:center;">Create Account</a>
+        </div>
+
+        <!-- SIGN IN PAGE -->
+        <div id="signin" class="page">
+            <h1>Welcome Back</h1>
+            <p class="subtitle">Sign in to your MAXI account</p>
+            
+            <form onsubmit="return validateSignIn(event)">
+                <label for="si-number">Phone Number</label>
+                <input type="tel" id="si-number" placeholder="e.g. 08012345678" oninput="clearError('si-number-error')">
+                <div id="si-number-error" class="error-text"></div>
+
+                <label for="si-password">Password</label>
+                <input type="password" id="si-password" placeholder="Enter your password" oninput="clearError('si-password-error')">
+                <div id="si-password-error" class="error-text"></div>
+
+                <button type="submit" class="btn-submit">Sign In</button>
+            </form>
+            <a href="#" class="back-link" onclick="showPage('home'); return false;">← Back</a>
+        </div>
+
+        <!-- CREATE ACCOUNT PAGE -->
+        <div id="signup" class="page">
+            <h1>Join MAXI</h1>
+            <p class="subtitle">Create your account today</p>
+            
+            <form onsubmit="return validateSignUp(event)">
+                <label for="su-username">Full Name</label>
+                <div class="hint">Make sure to match with your bank name</div>
+                <input type="text" id="su-username" placeholder="Enter your full name" oninput="clearError('su-username-error')">
+                <div id="su-username-error" class="error-text"></div>
+
+                <label for="su-number">Phone Number</label>
+                <input type="tel" id="su-number" placeholder="e.g. 08012345678" oninput="clearError('su-number-error')">
+                <div id="su-number-error" class="error-text"></div>
+
+                <label for="su-password">Password</label>
+                <input type="password" id="su-password" placeholder="Create a password (min 6 characters)" oninput="clearError('su-password-error')">
+                <div id="su-password-error" class="error-text"></div>
+
+                <button type="submit" class="btn-submit">Create Account</button>
+            </form>
+            <a href="#" class="back-link" onclick="showPage('home'); return false;">← Back</a>
+        </div>
     </div>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function clearError(errorId) {
+            document.getElementById(errorId).textContent = '';
+            const inputId = errorId.replace('-error', '');
+            const input = document.getElementById(inputId);
+            if (input) input.classList.remove('error');
+        }
+
+        function validateSignIn(e) {
+            e.preventDefault();
+            let ok = true;
+
+            const num = document.getElementById('si-number');
+            const numErr = document.getElementById('si-number-error');
+            const pass = document.getElementById('si-password');
+            const passErr = document.getElementById('si-password-error');
+
+            // Reset
+            num.classList.remove('error');
+            numErr.textContent = '';
+            pass.classList.remove('error');
+            passErr.textContent = '';
+
+            // Check number
+            const numVal = num.value.trim();
+            if (!numVal) {
+                numErr.textContent = '⚠️ Please enter your phone number';
+                num.classList.add('error');
+                ok = false;
+            } else if (!/^0[789][01]\d{8}$/.test(numVal.replace(/\s/g,''))) {
+                numErr.textContent = '⚠️ Please enter a valid Nigerian number';
+                num.classList.add('error');
+                ok = false;
+            }
+
+            // Check password
+            if (!pass.value) {
+                passErr.textContent = '⚠️ Please enter your password';
+                pass.classList.add('error');
+                ok = false;
+            } else if (pass.value.length < 6) {
+                passErr.textContent = '⚠️ Password must be at least 6 characters';
+                pass.classList.add('error');
+                ok = false;
+            }
+
+            if (ok) alert('✅ Signing in...');
+            return false;
+        }
+
+        function validateSignUp(e) {
+            e.preventDefault();
+            let ok = true;
+
+            const name = document.getElementById('su-username');
+            const nameErr = document.getElementById('su-username-error');
+            const num = document.getElementById('su-number');
+            const numErr = document.getElementById('su-number-error');
+            const pass = document.getElementById('su-password');
+            const passErr = document.getElementById('su-password-error');
+
+            // Reset
+            name.classList.remove('error');
+            nameErr.textContent = '';
+            num.classList.remove('error');
+            numErr.textContent = '';
+            pass.classList.remove('error');
+            passErr.textContent = '';
+
+            // Check name
+            const nameVal = name.value.trim();
+            if (!nameVal) {
+                nameErr.textContent = '⚠️ Please enter your full name';
+                name.classList.add('error');
+                ok = false;
+            } else if (nameVal.length < 3) {
+                nameErr.textContent = '⚠️ Please use your full name (match with bank records)';
+                name.classList.add('error');
+                ok = false;
+            }
+
+            // Check number
+            const numVal = num.value.trim();
+            if (!numVal) {
+                numErr.textContent = '⚠️ Please enter your phone number';
+                num.classList.add('error');
+                ok = false;
+            } else if (!/^0[789][01]\d{8}$/.test(numVal.replace(/\s/g,''))) {
+                numErr.textContent = '⚠️ Please enter a valid Nigerian number';
+                num.classList.add('error');
+                ok = false;
+            }
+
+            // Check password
+            if (!pass.value) {
+                passErr.textContent = '⚠️ Please create a password';
+                pass.classList.add('error');
+                ok = false;
+            } else if (pass.value.length < 6) {
+                passErr.textContent = '⚠️ Password must be at least 6 characters';
+                pass.classList.add('error');
+                ok = false;
+            }
+
+            if (ok) alert('✅ Account created successfully!');
+            return false;
+        }
+    </script>
 </body>
-</html>
+                </html>
+    
