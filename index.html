@@ -1,597 +1,385 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>MAXI</title>
+    <title>MAXI CHAT</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        :root {
-            --bg: #e8f0fe;
-            --card: #ffffff;
-            --text: #333333;
-            --text-sec: #666666;
-            --primary: #1a73e8;
-            --success: #0d9c48;
-            --error: #d93025;
-            --border: #dddddd;
-            --menu-bg: #ffffff;
-            --overlay: rgba(0,0,0,0.4);
-        }
-        .dark-mode {
-            --bg: #121212;
-            --card: #1e1e1e;
-            --text: #f0f0f0;
-            --text-sec: #b0b0b0;
-            --border: #444444;
-            --menu-bg: #2a2a2a;
-        }
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: Arial, sans-serif;
         }
         body {
-            background: var(--bg);
-            font-family: Arial, sans-serif;
-            min-height: 100vh;
+            background: #f0f4f8;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== LOGIN SCREEN ===== */
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a73e8, #0d9c48);
             padding: 20px;
-            transition: background 0.3s;
         }
-        .top-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 99;
-            background: var(--bg);
-        }
-        .menu-btn {
-            font-size: 26px;
-            cursor: pointer;
-            color: var(--primary);
-        }
-        .dark-toggle {
-            font-size: 22px;
-            cursor: pointer;
-            padding: 6px 10px;
-            border-radius: 6px;
-            background: var(--card);
-            border: 1px solid var(--border);
-        }
-        .balance-display {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 14px;
-            font-weight: bold;
-            color: var(--primary);
-        }
-        .menu-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--overlay);
-            z-index: 100;
-            display: none;
-        }
-        .menu-overlay.show {
-            display: block;
-        }
-        .menu-panel {
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: 280px;
-            background: var(--menu-bg);
-            z-index: 101;
-            padding: 60px 25px 30px;
-            transform: translateX(-100%);
-            transition: transform 0.3s;
-        }
-        .menu-panel.show {
-            transform: translateX(0);
-        }
-        .menu-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--text-sec);
-        }
-        .menu-item {
-            display: block;
-            padding: 14px 12px;
-            color: var(--text);
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-        .menu-item:hover {
-            background: var(--bg);
-        }
-        .menu-item.danger {
-            color: var(--error);
-        }
-        .link-section {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
-        }
-        .link-title {
-            font-size: 13px;
-            color: var(--text-sec);
-            margin-bottom: 12px;
-        }
-        .link-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 8px;
-            color: var(--primary);
-            font-size: 15px;
-            text-decoration: none;
-            border-radius: 6px;
-            margin-bottom: 6px;
-        }
-        .link-item:hover {
-            background: var(--bg);
-        }
-        .link-icon {
-            font-size: 18px;
-        }
-        .page {
-            display: none;
-            padding-top: 60px;
-        }
-        .page.active {
-            display: block;
-        }
-        .center-box {
-            max-width: 420px;
-            margin: 0 auto;
-        }
-        .card {
-            background: var(--card);
+        .login-box {
+            background: white;
             padding: 30px;
             border-radius: 16px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
-        }
-        h1 {
-            color: var(--primary);
-            font-size: 32px;
-            text-align: center;
-            margin-bottom: 8px;
-        }
-        .subtitle {
-            color: var(--text-sec);
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 15px;
-        }
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: var(--primary);
-            font-size: 14px;
-            text-decoration: none;
-        }
-        .btn-blue {
-            display: block;
-            background: var(--primary);
-            color: white;
-            padding: 16px;
-            border-radius: 8px;
-            font-weight: bold;
-            text-align: center;
-            border: none;
             width: 100%;
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 12px;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
-        .btn-white {
-            display: block;
-            background: var(--card);
-            color: var(--primary);
-            border: 2px solid var(--primary);
-            padding: 16px;
-            border-radius: 8px;
-            font-weight: bold;
+        .login-box h1 {
             text-align: center;
-            width: 100%;
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 12px;
-        }
-        label {
-            display: block;
-            color: var(--text);
-            font-size: 15px;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-        .hint {
-            font-size: 13px;
-            color: var(--text-sec);
-            margin-bottom: 6px;
-            font-style: italic;
-        }
-        .input-wrapper {
-            position: relative;
-            margin-bottom: 6px;
-        }
-        .input-wrapper input {
-            width: 100%;
-            padding: 16px 15px;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            font-size: 16px;
-            background: transparent;
-            color: var(--text);
-        }
-        .input-wrapper input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        .error-text {
-            color: var(--error);
-            font-size: 13px;
-            margin-bottom: 18px;
-            min-height: 18px;
-        }
-        .info-box {
-            background: rgba(26, 115, 232, 0.08);
-            padding: 18px;
-            border-radius: 10px;
-            margin: 18px 0;
-            font-size: 15px;
-            color: var(--text);
-            line-height: 1.8;
-        }
-        .remember-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-        .remember-box input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-        .remember-box label {
-            margin-bottom: 0;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .loading-box {
-            text-align: center;
-            padding: 100px 20px;
-        }
-        .loading-logo {
-            font-size: 72px;
-            font-weight: 900;
-            color: var(--primary);
-        }
-        .game-container {
-            max-width: 420px;
-            margin: 0 auto;
-            padding-top: 20px;
-        }
-        .game-top {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        .game-top h1 {
-            font-size: 36px;
+            color: #1a73e8;
             margin-bottom: 10px;
         }
-        .word-grid {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-        .letter-box {
-            width: 14%;
-            max-width: 50px;
-            aspect-ratio: 1 / 1;
-            border: 2px solid var(--primary);
-            border-radius: 8px;
+        .login-box p {
             text-align: center;
-            font-size: 26px;
-            font-weight: bold;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--card);
+            color: #666;
+            margin-bottom: 25px;
         }
-        .letter-box.wrong {
-            border-color: var(--error);
-            color: var(--error);
-        }
-        .letter-box.correct {
-            border-color: var(--success);
-            color: var(--success);
-        }
-        .word-status {
-            text-align: center;
-            font-size: 15px;
-            margin-bottom: 30px;
-            font-weight: 500;
-        }
-        .word-status.success {
-            color: var(--success);
-        }
-        .word-status.error {
-            color: var(--error);
-        }
-        .game-buttons {
-            display: flex;
-            justify-content: space-between;
-            gap: 0;
-        }
-        .game-btn {
-            width: 48%;
-            padding: 16px;
+        .login-box input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
             border-radius: 8px;
-            font-weight: bold;
             font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .login-box input:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+        .btn-join {
+            width: 100%;
+            padding: 15px;
+            background: #1a73e8;
+            color: white;
             border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
         }
-        .game-btn.deposit {
-            background: var(--success);
+        .btn-join:hover {
+            background: #1557b0;
+        }
+
+        /* ===== CHAT SCREEN ===== */
+        .chat-screen {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .chat-header {
+            background: #1a73e8;
             color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .game-btn.withdraw {
-            background: var(--primary);
-            color: white;
+        .chat-header h2 {
+            font-size: 18px;
         }
-        .hidden-input {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
-        }
-        .tap-hint {
-            text-align: center;
+        .user-info {
             font-size: 13px;
-            color: var(--text-sec);
-            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        .btn-leave {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* ===== MESSAGES AREA ===== */
+        .messages-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 16px;
+            max-width: 80%;
+        }
+        .message.you {
+            margin-left: auto;
+        }
+        .message .sender {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .message.you .sender {
+            text-align: right;
+            display: none;
+        }
+        .message .bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            background: white;
+            border: 1px solid #eee;
+            line-height: 1.4;
+            font-size: 15px;
+        }
+        .message.you .bubble {
+            background: #1a73e8;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message.other .bubble {
+            border-bottom-left-radius: 4px;
+        }
+        .time {
+            font-size: 10px;
+            color: #aaa;
+            margin-top: 4px;
+        }
+        .message.you .time {
+            text-align: right;
+        }
+        .system-msg {
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            margin: 15px 0;
+        }
+
+        /* ===== INPUT AREA ===== */
+        .input-area {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #ddd;
+            gap: 10px;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 14px 16px;
+            border: 2px solid #ddd;
+            border-radius: 24px;
+            font-size: 15px;
+        }
+        .input-area input:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+        .btn-send {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 0 22px;
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-send:hover {
+            background: #1557b0;
         }
     </style>
 </head>
 <body>
 
-    <div class="top-bar" id="topBar" style="display: none;">
-        <span class="menu-btn" onclick="openMenu()">☰</span>
-        <span class="balance-display" id="balanceDisplay">₦0.00</span>
-        <span class="dark-toggle" onclick="toggleDarkMode()">🌙</span>
-    </div>
-
-    <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
-    
-    <div class="menu-panel" id="menuPanel">
-        <span class="menu-close" onclick="closeMenu()">✕</span>
-        <div style="margin-top:10px;">
-            <div class="menu-item" onclick="showPage('dashboard')">🏠 Home</div>
-            <div class="menu-item" onclick="showPage('deposit')">💰 Deposit</div>
-            <div class="menu-item" onclick="showPage('withdraw')">💵 Withdraw</div>
-            <div class="menu-item danger" onclick="doLogout()">🚪 Log Out</div>
-            
-            <div class="link-section">
-                <div class="link-title">🔗 Quick Links</div>
-                <a href="https://www.sportsbet.com" target="_blank" class="link-item">⚽ Sportsbet</a>
-                <a href="https://www.facebook.com" target="_blank" class="link-item">📘 Facebook</a>
-                <a href="https://twitter.com" target="_blank" class="link-item">🐦 Twitter</a>
-                <a href="https://www.instagram.com" target="_blank" class="link-item">📸 Instagram</a>
-                <a href="https://youtube.com" target="_blank" class="link-item">▶️ YouTube</a>
-            </div>
+    <!-- ===== LOGIN SCREEN ===== -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <h1>💬 MAXI CHAT</h1>
+            <p>Enter your name to join the chat</p>
+            <input type="text" id="yourName" placeholder="Your nickname" maxlength="20">
+            <button class="btn-join" onclick="joinChat()">🚀 Join Chat</button>
         </div>
     </div>
 
-    <div style="padding-top: 20px;">
-        <div id="home" class="page active" style="padding-top: 0;">
-            <div class="center-box">
-                <div class="card">
-                    <h1>✨ MAXI ✨</h1>
-                    <p class="subtitle">Welcome to your trusted platform</p>
-                    <button class="btn-blue" onclick="showPage('signin')">Sign In</button>
-                    <button class="btn-white" onclick="showPage('signup')">Create Account</button>
-                </div>
+    <!-- ===== CHAT SCREEN ===== -->
+    <div class="chat-screen" id="chatScreen">
+        <div class="chat-header">
+            <div>
+                <h2>💬 MAXI CHAT ROOM</h2>
+                <div class="user-info" id="userInfo"></div>
             </div>
+            <button class="btn-leave" onclick="leaveChat()">Leave</button>
         </div>
 
-        <div id="signin" class="page">
-            <div class="center-box">
-                <div class="card">
-                    <h1>Welcome Back</h1>
-                    <p class="subtitle">Sign in to your MAXI account</p>
-                    <div>
-                        <label>Phone Number</label>
-                        <div class="input-wrapper">
-                            <input type="tel" id="si-number" placeholder="e.g. 08012345678">
-                        </div>
-                        <div id="si-number-error" class="error-text"></div>
+        <div class="messages-area" id="messagesArea"></div>
 
-                        <label>Password</label>
-                        <div class="input-wrapper">
-                            <input type="password" id="si-password" placeholder="Enter your password">
-                        </div>
-                        <div class="remember-box">
-                            <input type="checkbox" id="rememberMe">
-                            <label for="rememberMe">Keep me logged in</label>
-                        </div>
-                        <div id="si-password-error" class="error-text"></div>
-
-                        <button class="btn-blue" onclick="doSignIn()">Sign In</button>
-                    </div>
-                    <a href="#" class="back-link" onclick="showPage('home'); return false;">← Back</a>
-                </div>
-            </div>
-        </div>
-
-        <div id="signup" class="page">
-            <div class="center-box">
-                <div class="card">
-                    <h1>Join MAXI</h1>
-                    <p class="subtitle">Create your account today</p>
-                    <div>
-                        <label>Full Name</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="su-name" placeholder="Enter your full name">
-                        </div>
-                        <div id="su-name-error" class="error-text"></div>
-
-                        <label>Phone Number</label>
-                        <div class="input-wrapper">
-                            <input type="tel" id="su-number" placeholder="e.g. 08012345678">
-                        </div>
-                        <div id="su-number-error" class="error-text"></div>
-
-                        <label>Password</label>
-                        <div class="input-wrapper">
-                            <input type="password" id="su-password" placeholder="Min 6 characters">
-                        </div>
-                        <div id="su-password-error" class="error-text"></div>
-
-                        <button class="btn-blue" onclick="doSignUp()">Create Account</button>
-                    </div>
-                    <a href="#" class="back-link" onclick="showPage('home'); return false;">← Back</a>
-                </div>
-            </div>
-        </div>
-
-        <div id="loading" class="page">
-            <div class="loading-box">
-                <div class="loading-logo">MAXI</div>
-            </div>
-        </div>
-
-        <div id="dashboard" class="page">
-            <div class="game-container">
-                <div class="game-top">
-                    <h1>MAXI</h1>
-                </div>
-                
-                <input type="text" id="hidden-input" class="hidden-input" maxlength="7" autocomplete="off">
-                
-                <div class="word-grid" id="word-boxes">
-                    <div class="letter-box" id="box-0"></div>
-                    <div class="letter-box" id="box-1"></div>
-                    <div class="letter-box" id="box-2"></div>
-                    <div class="letter-box" id="box-3"></div>
-                    <div class="letter-box" id="box-4"></div>
-                    <div class="letter-box" id="box-5"></div>
-                    <div class="letter-box" id="box-6"></div>
-                </div>
-                
-                <div class="tap-hint">Tap the boxes above to start typing</div>
-                <div class="word-status" id="word-status"></div>
-                
-                <div class="game-buttons">
-                    <button class="game-btn withdraw" onclick="showPage('withdraw')">Withdraw</button>
-                    <button class="game-btn deposit" onclick="showPage('deposit')">Deposit</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="deposit" class="page">
-            <div class="center-box">
-                <div class="card">
-                    <h1>Deposit</h1>
-                    <div class="info-box">
-                        <strong>✅ Opay</strong><br><br>
-                        <strong>Number:</strong> 8103479666<br><br>
-                        Minimum deposit: <strong>₦500</strong><br>
-                        Send money to the number above, then tap confirm.
-                    </div>
-                    <button class="btn-blue" onclick="doDeposit()">I Have Paid</button>
-                    <a href="#" class="back-link" onclick="showPage('dashboard'); return false;">← Back</a>
-                </div>
-            </div>
-        </div>
-
-        <div id="withdraw" class="page">
-            <div class="center-box">
-                <div class="card">
-                    <h1>Withdraw</h1>
-                    <div class="info-box">
-                        Minimum withdrawal: <strong>₦2,000</strong>
-                    </div>
-                    <div>
-                        <label>Amount (₦)</label>
-                        <div class="input-wrapper">
-                            <input type="number" id="wd-amount" placeholder="Min: 2000" min="2000">
-                        </div>
-                        <div id="wd-error" class="error-text"></div>
-
-                        <label>Bank Name</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="wd-bank" placeholder="Your bank name">
-                        </div>
-
-                        <label>Account Number</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="wd-acc" placeholder="Your account number">
-                        </div>
-
-                        <label>Account Name</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="wd-name" placeholder="Must match account details">
-                        </div>
-                        
-                        <button class="btn-blue" onclick="doWithdraw()">Request Withdrawal</button>
-                    </div>
-                    <a href="#" class="back-link" onclick="showPage('dashboard'); return false;">← Back</a>
-                </div>
-            </div>
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="Type your message..." maxlength="500">
+            <button class="btn-send" onclick="sendMessage()">Send</button>
         </div>
     </div>
 
     <script>
-        const CORRECT_WORD = "OCTOBER";
-        let userInput = "";
-        let userBalance = 0;
+        let yourName = "";
+        let messages = [];
 
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(function(p) {
-                p.classList.remove('active');
+        // Load saved messages & name
+        function loadChat() {
+            let savedName = localStorage.getItem('chatUserName');
+            let savedMsgs = localStorage.getItem('chatMessages');
+            if (savedName) yourName = savedName;
+            if (savedMsgs) messages = JSON.parse(savedMsgs);
+        }
+
+        // Save to storage
+        function saveMessages() {
+            localStorage.setItem('chatMessages', JSON.stringify(messages));
+        }
+
+        // Join chat
+        function joinChat() {
+            let name = document.getElementById('yourName').value.trim();
+            if (!name) {
+                alert('⚠️ Please enter your name!');
+                return;
+            }
+            yourName = name;
+            localStorage.setItem('chatUserName', yourName);
+            
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('chatScreen').style.display = 'flex';
+            document.getElementById('userInfo').textContent = 'Chatting as: ' + yourName;
+            
+            addSystemMessage(yourName + ' joined the chat ✅');
+            renderMessages();
+            
+            // Auto focus input
+            document.getElementById('messageInput').focus();
+        }
+
+        // Leave chat
+        function leaveChat() {
+            if (confirm('Are you sure you want to leave?')) {
+                addSystemMessage(yourName + ' left the chat 👋');
+                localStorage.removeItem('chatUserName');
+                yourName = "";
+                document.getElementById('chatScreen').style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('yourName').value = "";
+            }
+        }
+
+        // Add system message
+        function addSystemMessage(text) {
+            let time = getTime();
+            messages.push({ type: 'system', text: text, time: time });
+            saveMessages();
+            renderMessages();
+        }
+
+        // Send message
+        function sendMessage() {
+            let input = document.getElementById('messageInput');
+            let text = input.value.trim();
+            if (!text) return;
+
+            let time = getTime();
+            messages.push({
+                sender: yourName,
+                text: text,
+                time: time,
+                isYou: true
             });
-            document.getElementById(pageId).classList.add('active');
-            
-            var topBar = document.getElementById('topBar');
-            topBar.style.display = (pageId === 'home') ? 'none' : 'flex';
-            
-            clearAllBoxes();
-            document.getElementById('word-status').textContent = "";
+            saveMessages();
+            input.value = "";
+            renderMessages();
+
+            // Simulate reply after 1-2 seconds
+            if (Math.random() > 0.3) {
+                setTimeout(function() {
+                    let replies = [
+                        "Nice! 👍",
+                        "I hear you!",
+                        "That's interesting 😊",
+                        "Okay, got it!",
+                        "Thanks for sharing!",
+                        "Tell me more!"
+                    ];
+                    let randomReply = replies[Math.floor(Math.random() * replies.length)];
+                    let randomName = "Friend";
+                    messages.push({
+                        sender: randomName,
+                        text: randomReply,
+                        time: getTime(),
+                        isYou: false
+                    });
+                    saveMessages();
+                    renderMessages();
+                }, 1000 + Math.random() * 1000);
+            }
         }
 
-        function openMenu() {
-            document.getElementById('menuOverlay').classList.add('show');
-            document.getElementById('menuPanel').classList.add('show');
-        }
-        function closeMenu() {
-            document.getElementById('menuOverlay').classList.remove('show');
-            document.getElementById('menuPanel').classList.remove('show');
-        }
-
-        function toggleDarkMode() {
-            var isDark = document.body.classList.toggle('dark-mode');
-            document.querySelector('.dark-toggle').textContent = isDark ? '☀️' : '🌙';
-            localStorage.setItem('maxiDarkMode', isDark ? 'on' : 'off');
+        // Get current time
+        function getTime() {
+            let now = new Date();
+            let h = now.getHours();
+            let m = now.getMinutes();
+            if (m < 10) m = "0" + m;
+            return h + ":" + m;
         }
 
-        function loadDarkMode() {
-            if (localStorage.getItem('maxiDarkMode') =
+        // Render all messages
+        function renderMessages() {
+            let area = document.getElementById('messagesArea');
+            area.innerHTML = "";
+
+            for (let i = 0; i < messages.length; i++) {
+                let msg = messages[i];
+                
+                if (msg.type === 'system') {
+                    area.innerHTML += '<div class="system-msg">' + msg.text + ' • ' + msg.time + '</div>';
+                } else {
+                    let cls = msg.isYou ? 'message you' : 'message other';
+                    area.innerHTML += '<div class="' + cls + '">' +
+                        '<div class="sender">' + msg.sender + '</div>' +
+                        '<div class="bubble">' + escapeHtml(msg.text) + '</div>' +
+                        '<div class="time">' + msg.time + '</div>' +
+                        '</div>';
+                }
+            }
+            // Scroll to bottom
+            area.scrollTop = area.scrollHeight;
+        }
+
+        // Escape special characters
+        function escapeHtml(text) {
+            let div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Enter key to send
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && yourName) {
+                sendMessage();
+            }
+        });
+
+        // Auto login if name saved
+        document.addEventListener('DOMContentLoaded', function() {
+            loadChat();
+            if (yourName) {
+                document.getElementById('yourName').value = yourName;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('chatScreen').style.display = 'flex';
+                document.getElementById('userInfo').textContent = 'Chatting as: ' + yourName;
+                renderMessages();
+                document.getElementById('messageInput').focus();
+            }
+        });
+    </script>
+</body>
+</html>
