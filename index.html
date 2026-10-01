@@ -232,7 +232,7 @@
         }
         .input-wrapper input {
             width: 100%;
-            padding: 16px 50px 16px 15px;
+            padding: 16px 15px;
             border: 2px solid var(--border);
             border-radius: 8px;
             font-size: 16px;
@@ -242,28 +242,6 @@
         .input-wrapper input:focus {
             outline: none;
             border-color: var(--primary);
-        }
-        .input-wrapper input.error {
-            border-color: var(--error);
-            background: rgba(217, 48, 37, 0.05);
-        }
-        .eye-icon {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 20px;
-            cursor: pointer;
-            color: var(--text-sec);
-            user-select: none;
-        }
-        .forgot-link {
-            text-align: right;
-            font-size: 14px;
-            color: var(--primary);
-            margin-bottom: 18px;
-            display: block;
-            text-decoration: none;
         }
         .error-text {
             color: var(--error);
@@ -304,12 +282,6 @@
             font-size: 72px;
             font-weight: 900;
             color: var(--primary);
-            animation: pulse 1.2s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 0.4; transform: scale(0.95); }
-            50% { opacity: 1; transform: scale(1.08); }
-            100% { opacity: 0.4; transform: scale(0.95); }
         }
         .game-container {
             max-width: 420px;
@@ -348,12 +320,6 @@
         .letter-box.wrong {
             border-color: var(--error);
             color: var(--error);
-            animation: shake 0.4s;
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-6px); }
-            40%, 80% { transform: translateX(6px); }
         }
         .letter-box.correct {
             border-color: var(--success);
@@ -419,28 +385,18 @@
     <div class="menu-panel" id="menuPanel">
         <span class="menu-close" onclick="closeMenu()">✕</span>
         <div style="margin-top:10px;">
-            <div class="menu-item" onclick="closeMenu(); goToPage('dashboard')">🏠 Home</div>
-            <div class="menu-item" onclick="closeMenu(); goToPage('deposit')">💰 Deposit</div>
-            <div class="menu-item" onclick="closeMenu(); goToPage('withdraw')">💵 Withdraw</div>
-            <div class="menu-item danger" onclick="closeMenu(); logout()">🚪 Log Out</div>
+            <div class="menu-item" onclick="showPage('dashboard')">🏠 Home</div>
+            <div class="menu-item" onclick="showPage('deposit')">💰 Deposit</div>
+            <div class="menu-item" onclick="showPage('withdraw')">💵 Withdraw</div>
+            <div class="menu-item danger" onclick="doLogout()">🚪 Log Out</div>
             
             <div class="link-section">
                 <div class="link-title">🔗 Quick Links</div>
-                <a href="https://www.sportsbet.com" target="_blank" class="link-item">
-                    <span class="link-icon">⚽</span> Sportsbet
-                </a>
-                <a href="https://www.facebook.com" target="_blank" class="link-item">
-                    <span class="link-icon">📘</span> Facebook
-                </a>
-                <a href="https://www.twitter.com" target="_blank" class="link-item">
-                    <span class="link-icon">🐦</span> Twitter
-                </a>
-                <a href="https://www.instagram.com" target="_blank" class="link-item">
-                    <span class="link-icon">📸</span> Instagram
-                </a>
-                <a href="https://www.youtube.com" target="_blank" class="link-item">
-                    <span class="link-icon">▶️</span> YouTube
-                </a>
+                <a href="https://www.sportsbet.com" target="_blank" class="link-item">⚽ Sportsbet</a>
+                <a href="https://www.facebook.com" target="_blank" class="link-item">📘 Facebook</a>
+                <a href="https://twitter.com" target="_blank" class="link-item">🐦 Twitter</a>
+                <a href="https://www.instagram.com" target="_blank" class="link-item">📸 Instagram</a>
+                <a href="https://youtube.com" target="_blank" class="link-item">▶️ YouTube</a>
             </div>
         </div>
     </div>
@@ -451,8 +407,8 @@
                 <div class="card">
                     <h1>✨ MAXI ✨</h1>
                     <p class="subtitle">Welcome to your trusted platform</p>
-                    <button class="btn-blue" onclick="goToPage('signin')">Sign In</button>
-                    <button class="btn-white" onclick="goToPage('signup')">Create Account</button>
+                    <button class="btn-blue" onclick="showPage('signin')">Sign In</button>
+                    <button class="btn-white" onclick="showPage('signup')">Create Account</button>
                 </div>
             </div>
         </div>
@@ -462,43 +418,26 @@
                 <div class="card">
                     <h1>Welcome Back</h1>
                     <p class="subtitle">Sign in to your MAXI account</p>
-                    <form onsubmit="return handleSignIn(event)">
+                    <div>
                         <label>Phone Number</label>
                         <div class="input-wrapper">
-                            <input type="tel" id="si-number" placeholder="e.g. 08012345678" oninput="clearErr('si-number-error')">
+                            <input type="tel" id="si-number" placeholder="e.g. 08012345678">
                         </div>
                         <div id="si-number-error" class="error-text"></div>
 
                         <label>Password</label>
                         <div class="input-wrapper">
-                            <input type="password" id="si-password" placeholder="Enter your password" oninput="clearErr('si-password-error')">
-                            <span class="eye-icon" onclick="togglePassword('si-password')">👁️</span>
+                            <input type="password" id="si-password" placeholder="Enter your password">
                         </div>
                         <div class="remember-box">
                             <input type="checkbox" id="rememberMe">
                             <label for="rememberMe">Keep me logged in</label>
                         </div>
-                        <a href="#" class="forgot-link" onclick="goToPage('forgot-password'); return false;">Forgot Password?</a>
                         <div id="si-password-error" class="error-text"></div>
 
-                        <button type="submit" class="btn-blue">Sign In</button>
-                    </form>
-                    <a href="#" class="back-link" onclick="goToPage('home'); return false;">← Back</a>
-                </div>
-            </div>
-        </div>
-
-        <div id="forgot-password" class="page">
-            <div class="center-box">
-                <div class="card">
-                    <h1>Reset Password</h1>
-                    <p class="subtitle">Contact support to reset your password</p>
-                    <div class="info-box">
-                        📞 <strong>WhatsApp:</strong> 0800-000-0000<br>
-                        📧 <strong>Email:</strong> support@maxi.com<br><br>
-                        Provide your registered phone number and full name.
+                        <button class="btn-blue" onclick="doSignIn()">Sign In</button>
                     </div>
-                    <a href="#" class="back-link" onclick="goToPage('signin'); return false;">← Back</a>
+                    <a href="#" class="back-link" onclick="showPage('home'); return false;">← Back</a>
                 </div>
             </div>
         </div>
@@ -508,30 +447,28 @@
                 <div class="card">
                     <h1>Join MAXI</h1>
                     <p class="subtitle">Create your account today</p>
-                    <form onsubmit="return handleSignUp(event)">
+                    <div>
                         <label>Full Name</label>
-                        <div class="hint">Make sure to match with your bank name</div>
                         <div class="input-wrapper">
-                            <input type="text" id="su-name" placeholder="Enter your full name" oninput="clearErr('su-name-error')">
+                            <input type="text" id="su-name" placeholder="Enter your full name">
                         </div>
                         <div id="su-name-error" class="error-text"></div>
 
                         <label>Phone Number</label>
                         <div class="input-wrapper">
-                            <input type="tel" id="su-number" placeholder="e.g. 08012345678" oninput="clearErr('su-number-error')">
+                            <input type="tel" id="su-number" placeholder="e.g. 08012345678">
                         </div>
                         <div id="su-number-error" class="error-text"></div>
 
                         <label>Password</label>
                         <div class="input-wrapper">
-                            <input type="password" id="su-password" placeholder="Min 6 characters" oninput="clearErr('su-password-error')">
-                            <span class="eye-icon" onclick="togglePassword('su-password')">👁️</span>
+                            <input type="password" id="su-password" placeholder="Min 6 characters">
                         </div>
                         <div id="su-password-error" class="error-text"></div>
 
-                        <button type="submit" class="btn-blue">Create Account</button>
-                    </form>
-                    <a href="#" class="back-link" onclick="goToPage('home'); return false;">← Back</a>
+                        <button class="btn-blue" onclick="doSignUp()">Create Account</button>
+                    </div>
+                    <a href="#" class="back-link" onclick="showPage('home'); return false;">← Back</a>
                 </div>
             </div>
         </div>
@@ -564,8 +501,8 @@
                 <div class="word-status" id="word-status"></div>
                 
                 <div class="game-buttons">
-                    <button class="game-btn withdraw" onclick="goToPage('withdraw')">Withdraw</button>
-                    <button class="game-btn deposit" onclick="goToPage('deposit')">Deposit</button>
+                    <button class="game-btn withdraw" onclick="showPage('withdraw')">Withdraw</button>
+                    <button class="game-btn deposit" onclick="showPage('deposit')">Deposit</button>
                 </div>
             </div>
         </div>
@@ -580,11 +517,81 @@
                         Minimum deposit: <strong>₦500</strong><br>
                         Send money to the number above, then tap confirm.
                     </div>
-                    <button class="btn-blue" onclick="depositSuccess()">I Have Paid</button>
-                    <a href="#" class="back-link" onclick="goToPage('dashboard'); return false;">← Back</a>
+                    <button class="btn-blue" onclick="doDeposit()">I Have Paid</button>
+                    <a href="#" class="back-link" onclick="showPage('dashboard'); return false;">← Back</a>
                 </div>
             </div>
         </div>
 
         <div id="withdraw" class="page">
-            <div class="cent
+            <div class="center-box">
+                <div class="card">
+                    <h1>Withdraw</h1>
+                    <div class="info-box">
+                        Minimum withdrawal: <strong>₦2,000</strong>
+                    </div>
+                    <div>
+                        <label>Amount (₦)</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="wd-amount" placeholder="Min: 2000" min="2000">
+                        </div>
+                        <div id="wd-error" class="error-text"></div>
+
+                        <label>Bank Name</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="wd-bank" placeholder="Your bank name">
+                        </div>
+
+                        <label>Account Number</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="wd-acc" placeholder="Your account number">
+                        </div>
+
+                        <label>Account Name</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="wd-name" placeholder="Must match account details">
+                        </div>
+                        
+                        <button class="btn-blue" onclick="doWithdraw()">Request Withdrawal</button>
+                    </div>
+                    <a href="#" class="back-link" onclick="showPage('dashboard'); return false;">← Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CORRECT_WORD = "OCTOBER";
+        let userInput = "";
+        let userBalance = 0;
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(function(p) {
+                p.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            
+            var topBar = document.getElementById('topBar');
+            topBar.style.display = (pageId === 'home') ? 'none' : 'flex';
+            
+            clearAllBoxes();
+            document.getElementById('word-status').textContent = "";
+        }
+
+        function openMenu() {
+            document.getElementById('menuOverlay').classList.add('show');
+            document.getElementById('menuPanel').classList.add('show');
+        }
+        function closeMenu() {
+            document.getElementById('menuOverlay').classList.remove('show');
+            document.getElementById('menuPanel').classList.remove('show');
+        }
+
+        function toggleDarkMode() {
+            var isDark = document.body.classList.toggle('dark-mode');
+            document.querySelector('.dark-toggle').textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('maxiDarkMode', isDark ? 'on' : 'off');
+        }
+
+        function loadDarkMode() {
+            if (localStorage.getItem('maxiDarkMode') =
