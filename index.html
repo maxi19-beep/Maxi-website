@@ -36,7 +36,6 @@
             padding: 20px;
             transition: background 0.3s;
         }
-        /* ===== TOP BAR & MENU ===== */
         .top-bar {
             position: fixed;
             top: 0;
@@ -149,7 +148,6 @@
         .link-icon {
             font-size: 18px;
         }
-        /* ===== PAGES ===== */
         .page {
             display: none;
             padding-top: 60px;
@@ -298,10 +296,9 @@
             font-size: 14px;
             cursor: pointer;
         }
-        /* ===== LOADING SCREEN ===== */
         .loading-box {
             text-align: center;
-            padding: 80px 20px;
+            padding: 100px 20px;
         }
         .loading-logo {
             font-size: 72px;
@@ -314,7 +311,6 @@
             50% { opacity: 1; transform: scale(1.08); }
             100% { opacity: 0.4; transform: scale(0.95); }
         }
-        /* ===== WORD GAME BOXES ===== */
         .game-container {
             max-width: 420px;
             margin: 0 auto;
@@ -412,23 +408,20 @@
 </head>
 <body>
 
-    <!-- ===== TOP BAR & MENU ===== -->
     <div class="top-bar" id="topBar" style="display: none;">
         <span class="menu-btn" onclick="openMenu()">☰</span>
         <span class="balance-display" id="balanceDisplay">₦0.00</span>
         <span class="dark-toggle" onclick="toggleDarkMode()">🌙</span>
     </div>
 
-    <!-- Menu Overlay -->
     <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
     
-    <!-- Menu Panel -->
     <div class="menu-panel" id="menuPanel">
         <span class="menu-close" onclick="closeMenu()">✕</span>
         <div style="margin-top:10px;">
-            <div class="menu-item" onclick="closeMenu(); showPage('dashboard')">🏠 Home</div>
-            <div class="menu-item" onclick="closeMenu(); showPage('deposit')">💰 Deposit</div>
-            <div class="menu-item" onclick="closeMenu(); showPage('withdraw')">💵 Withdraw</div>
+            <div class="menu-item" onclick="closeMenu(); goToPage('dashboard')">🏠 Home</div>
+            <div class="menu-item" onclick="closeMenu(); goToPage('deposit')">💰 Deposit</div>
+            <div class="menu-item" onclick="closeMenu(); goToPage('withdraw')">💵 Withdraw</div>
             <div class="menu-item danger" onclick="closeMenu(); logout()">🚪 Log Out</div>
             
             <div class="link-section">
@@ -453,25 +446,23 @@
     </div>
 
     <div style="padding-top: 20px;">
-        <!-- ===== HOME PAGE ===== -->
         <div id="home" class="page active" style="padding-top: 0;">
             <div class="center-box">
                 <div class="card">
                     <h1>✨ MAXI ✨</h1>
                     <p class="subtitle">Welcome to your trusted platform</p>
-                    <button class="btn-blue" onclick="showPage('signin')">Sign In</button>
-                    <button class="btn-white" onclick="showPage('signup')">Create Account</button>
+                    <button class="btn-blue" onclick="goToPage('signin')">Sign In</button>
+                    <button class="btn-white" onclick="goToPage('signup')">Create Account</button>
                 </div>
             </div>
         </div>
 
-        <!-- ===== SIGN IN ===== -->
         <div id="signin" class="page">
             <div class="center-box">
                 <div class="card">
                     <h1>Welcome Back</h1>
                     <p class="subtitle">Sign in to your MAXI account</p>
-                    <form onsubmit="return validateSignIn(event)">
+                    <form onsubmit="return handleSignIn(event)">
                         <label>Phone Number</label>
                         <div class="input-wrapper">
                             <input type="tel" id="si-number" placeholder="e.g. 08012345678" oninput="clearErr('si-number-error')">
@@ -487,17 +478,16 @@
                             <input type="checkbox" id="rememberMe">
                             <label for="rememberMe">Keep me logged in</label>
                         </div>
-                        <a href="#" class="forgot-link" onclick="showPage('forgot-password'); return false;">Forgot Password?</a>
+                        <a href="#" class="forgot-link" onclick="goToPage('forgot-password'); return false;">Forgot Password?</a>
                         <div id="si-password-error" class="error-text"></div>
 
                         <button type="submit" class="btn-blue">Sign In</button>
                     </form>
-                    <a href="#" class="back-link" onclick="showPage('home'); return false;">← Back</a>
+                    <a href="#" class="back-link" onclick="goToPage('home'); return false;">← Back</a>
                 </div>
             </div>
         </div>
 
-        <!-- ===== FORGOT PASSWORD ===== -->
         <div id="forgot-password" class="page">
             <div class="center-box">
                 <div class="card">
@@ -508,18 +498,17 @@
                         📧 <strong>Email:</strong> support@maxi.com<br><br>
                         Provide your registered phone number and full name.
                     </div>
-                    <a href="#" class="back-link" onclick="showPage('signin'); return false;">← Back</a>
+                    <a href="#" class="back-link" onclick="goToPage('signin'); return false;">← Back</a>
                 </div>
             </div>
         </div>
 
-        <!-- ===== CREATE ACCOUNT ===== -->
         <div id="signup" class="page">
             <div class="center-box">
                 <div class="card">
-                    <h1>Create Account</h1>
-                    <p class="subtitle">Join MAXI today</p>
-                    <form onsubmit="return validateSignUp(event)">
+                    <h1>Join MAXI</h1>
+                    <p class="subtitle">Create your account today</p>
+                    <form onsubmit="return handleSignUp(event)">
                         <label>Full Name</label>
                         <div class="hint">Make sure to match with your bank name</div>
                         <div class="input-wrapper">
@@ -542,19 +531,17 @@
 
                         <button type="submit" class="btn-blue">Create Account</button>
                     </form>
-                    <a href="#" class="back-link" onclick="showPage('home'); return false;">← Back</a>
+                    <a href="#" class="back-link" onclick="goToPage('home'); return false;">← Back</a>
                 </div>
             </div>
         </div>
 
-        <!-- ===== LOADING SCREEN ===== -->
         <div id="loading" class="page">
             <div class="loading-box">
                 <div class="loading-logo">MAXI</div>
             </div>
         </div>
 
-        <!-- ===== DASHBOARD / WORD GAME ===== -->
         <div id="dashboard" class="page">
             <div class="game-container">
                 <div class="game-top">
@@ -577,17 +564,27 @@
                 <div class="word-status" id="word-status"></div>
                 
                 <div class="game-buttons">
-                    <button class="game-btn withdraw" onclick="showPage('withdraw')">Withdraw</button>
-                    <button class="game-btn deposit" onclick="showPage('deposit')">Deposit</button>
+                    <button class="game-btn withdraw" onclick="goToPage('withdraw')">Withdraw</button>
+                    <button class="game-btn deposit" onclick="goToPage('deposit')">Deposit</button>
                 </div>
             </div>
         </div>
 
-        <!-- ===== DEPOSIT ===== -->
         <div id="deposit" class="page">
             <div class="center-box">
                 <div class="card">
                     <h1>Deposit</h1>
                     <div class="info-box">
                         <strong>✅ Opay</strong><br><br>
-                       
+                        <strong>Number:</strong> 8103479666<br><br>
+                        Minimum deposit: <strong>₦500</strong><br>
+                        Send money to the number above, then tap confirm.
+                    </div>
+                    <button class="btn-blue" onclick="depositSuccess()">I Have Paid</button>
+                    <a href="#" class="back-link" onclick="goToPage('dashboard'); return false;">← Back</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="withdraw" class="page">
+            <div class="cent
