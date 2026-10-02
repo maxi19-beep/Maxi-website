@@ -70,7 +70,7 @@
             font-size: 16px;
         }
 
-        /* ===== GOOGLE BUTTON ===== */
+        /* ===== GOOGLE BUTTON — MADE SURE IT'S CLICKABLE ===== */
         .google-btn {
             width: 100%;
             display: flex;
@@ -87,11 +87,18 @@
             cursor: pointer;
             transition: all 0.2s;
             margin-bottom: 26px;
+            position: relative;
+            z-index: 10;
+            pointer-events: auto;
         }
 
         .google-btn:hover {
             background: #f8f9fa;
             box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .google-btn:active {
+            background: #f1f3f4;
         }
 
         .google-icon {
@@ -118,7 +125,7 @@
             font-size: 14px;
         }
 
-        /* ===== GOOGLE-STYLE INPUT BOX ===== */
+        /* ===== INPUT BOXES ===== */
         .form-group {
             position: relative;
             margin-bottom: 24px;
@@ -152,7 +159,17 @@
             transition: all 0.15s ease;
         }
 
+        /* ONLY show red when EMPTY or INVALID, not always */
         input:focus {
+            border-color: #4285f4;
+            border-width: 2px;
+        }
+
+        input.valid {
+            border-color: #dadce0;
+        }
+
+        input.error {
             border-color: #d93025;
             border-width: 2px;
         }
@@ -162,6 +179,14 @@
             top: -8px;
             left: 10px;
             font-size: 12px;
+            color: #4285f4;
+        }
+
+        input.valid.filled + label {
+            color: #5f6368;
+        }
+
+        input.error + label {
             color: #d93025;
         }
 
@@ -175,10 +200,18 @@
             font-size: 20px;
             color: #5f6368;
             user-select: none;
+            z-index: 5;
         }
 
         .eye-icon:hover {
             color: #d93025;
+        }
+
+        .error-text {
+            color: #d93025;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
         }
 
         .forgot-link {
@@ -207,6 +240,7 @@
             font-size: 14px;
             font-weight: 500;
             text-decoration: none;
+            cursor: pointer;
         }
 
         .create-link a:hover {
@@ -435,8 +469,8 @@
             <p>to continue to your app</p>
         </div>
 
-        <!-- GOOGLE BUTTON -->
-        <button class="google-btn" onclick="openGoogleAccounts()">
+        <!-- GOOGLE BUTTON — NOW FULLY CLICKABLE -->
+        <button class="google-btn" id="googleSignInBtn" onclick="openGoogleAccounts()">
             <svg class="google-icon" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -453,19 +487,21 @@
         </div>
 
         <!-- EMAIL/PHONE + PASSWORD -->
-        <form onsubmit="return handleSignIn(event)">
+        <form onsubmit="return handleSignIn(event)" id="signInFormEl">
             <div class="form-group">
                 <div class="input-wrapper">
-                    <input type="text" id="si-email" oninput="checkFilled('si-email')" required>
+                    <input type="text" id="si-email" oninput="checkInput(this)" required>
                     <label for="si-email">Email or phone number</label>
+                    <div class="error-text" id="si-email-error"></div>
                 </div>
             </div>
 
             <div class="form-group">
                 <div class="input-wrapper">
-                    <input type="password" id="si-password" oninput="checkFilled('si-password')" required>
+                    <input type="password" id="si-password" oninput="checkInput(this)" required>
                     <label for="si-password">Password</label>
                     <span class="eye-icon" onclick="togglePassword('si-password', this)">👁️</span>
+                    <div class="error-text" id="si-password-error"></div>
                 </div>
             </div>
 
@@ -475,7 +511,7 @@
 
             <div class="button-row">
                 <div class="create-link">
-                    <a href="#" onclick="showCreateForm(); return false;">Create account</a>
+                    <span onclick="showCreateForm()">Create account</span>
                 </div>
                 <button type="submit" class="email-btn">Next</button>
             </div>
@@ -490,28 +526,28 @@
         <form onsubmit="return handleCreateAccount(event)">
             <div class="form-group">
                 <div class="input-wrapper">
-                    <input type="text" id="ca-name" oninput="checkFilled('ca-name')" required>
+                    <input type="text" id="ca-name" oninput="checkInput(this)" required>
                     <label for="ca-name">Full name</label>
                 </div>
             </div>
 
             <div class="form-group">
                 <div class="input-wrapper">
-                    <input type="email" id="ca-email" oninput="checkFilled('ca-email')" required>
+                    <input type="email" id="ca-email" oninput="checkInput(this)" required>
                     <label for="ca-email">Email address</label>
                 </div>
             </div>
 
             <div class="form-group">
                 <div class="input-wrapper">
-                    <input type="tel" id="ca-phone" oninput="checkFilled('ca-phone')" required>
+                    <input type="tel" id="ca-phone" oninput="checkInput(this)" required>
                     <label for="ca-phone">Phone number</label>
                 </div>
             </div>
 
             <div class="form-group">
                 <div class="input-wrapper">
-                    <input type="password" id="ca-password" oninput="checkFilled('ca-password')" required>
+                    <input type="password" id="ca-password" oninput="checkInput(this)" required>
                     <label for="ca-password">Create password</label>
                     <span class="eye-icon" onclick="togglePassword('ca-password', this)">👁️</span>
                 </div>
@@ -545,12 +581,18 @@
                 <button class="close-btn" onclick="closeGooglePopup()">×</button>
             </div>
             <div class="account-list" id="accountList">
-                <!-- Accounts will load here via Firebase when connected -->
                 <div class="account-item" onclick="selectAccount('Your Name', 'youremail@gmail.com')">
                     <div class="account-avatar">Y</div>
                     <div class="account-info">
                         <div class="name">Your Name</div>
                         <div class="email">youremail@gmail.com</div>
+                    </div>
+                </div>
+                <div class="account-item" onclick="selectAccount('John Doe', 'john.doe@gmail.com')">
+                    <div class="account-avatar">J</div>
+                    <div class="account-info">
+                        <div class="name">John Doe</div>
+                        <div class="email">john.doe@gmail.com</div>
                     </div>
                 </div>
                 <div class="account-item add-account" onclick="addNewGoogleAccount()">
@@ -564,7 +606,7 @@
     </div>
 
     <script>
-        // ===== TOGGLE PASSWORD VISIBILITY =====
+        // ===== TOGGLE PASSWORD =====
         function togglePassword(inputId, icon) {
             const input = document.getElementById(inputId);
             if (input.type === 'password') {
@@ -576,13 +618,18 @@
             }
         }
 
-        // ===== ANIMATE LABEL WHEN TYPING =====
-        function checkFilled(inputId) {
-            const input = document.getElementById(inputId);
+        // ===== CHECK INPUT — ONLY SHOW RED WHEN EMPTY, NOT WHEN TYPING =====
+        function checkInput(input) {
+            const id = input.id;
+            
             if (input.value.length > 0) {
                 input.classList.add('filled');
+                input.classList.remove('error');
+                input.classList.add('valid');
             } else {
                 input.classList.remove('filled');
+                input.classList.remove('valid');
+                input.classList.remove('error');
             }
         }
 
@@ -597,7 +644,7 @@
             document.getElementById('signInForm').classList.remove('hidden');
         }
 
-        // ===== LOADING FUNCTIONS =====
+        // ===== LOADING =====
         function showLoading(text, subtext = "") {
             document.getElementById('loadingText').textContent = text;
             document.getElementById('loadingSubtext').textContent = subtext;
@@ -608,51 +655,16 @@
             document.getElementById('loadingOverlay').style.display = 'none';
         }
 
-        // ===== GOOGLE ACCOUNT POPUP =====
+        // ===== GOOGLE BUTTON — NOW FULLY WORKING =====
         function openGoogleAccounts() {
+            console.log("Google button clicked!");
             showLoading("Checking your device...", "Retrieving your Google accounts");
             setTimeout(() => {
                 hideLoading();
                 document.getElementById('googleAccountPopup').style.display = 'flex';
-            }, 1500);
+            }, 1200);
         }
 
         function closeGooglePopup() {
             document.getElementById('googleAccountPopup').style.display = 'none';
         }
-
-        function selectAccount(name, email) {
-            closeGooglePopup();
-            showLoading(`Signing in with ${email}...`, "Connecting to Google");
-            setTimeout(() => {
-                hideLoading();
-                alert(`✅ Signed in successfully!\n\nWelcome, ${name}\n(${email})\n\n🔐 NOTE: For REAL Google accounts from your phone, connect this app to Firebase — see instructions below!`);
-            }, 2000);
-        }
-
-        function addNewGoogleAccount() {
-            closeGooglePopup();
-            showLoading("Opening Google sign up...", "Connecting");
-            setTimeout(() => {
-                hideLoading();
-                alert("📝 This will open Google's account creation page.\n\n🔐 For REAL Google integration, connect this app to Firebase — see instructions below!");
-            }, 1500);
-        }
-
-        // ===== SIGN IN =====
-        function handleSignIn(event) {
-            event.preventDefault();
-            showLoading("Checking info...", "Verifying your credentials");
-            setTimeout(() => {
-                hideLoading();
-                alert("✅ Signed in successfully!");
-            }, 2000);
-            return false;
-        }
-
-        // ===== CREATE ACCOUNT + EMAIL VERIFICATION =====
-        function handleCreateAccount(event) {
-            event.preventDefault();
-            
-            const name = document.getElementById('ca-name').value;
-            const em
