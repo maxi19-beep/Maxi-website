@@ -3,180 +3,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Security Multi-User Tracker</title>
+  <title>Live Location Tracker - Viewer</title>
 
-  <!-- Leaflet CSS -->
+  <!-- Leaflet CSS for Maps -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body, html { width: 100%; height: 100%; font-family: sans-serif; overflow: hidden; }
-
-    #map { width: 100vw; height: 100vh; background: #121212; }
-
-    /* Snapchat Badge Overlay */
-    .snap-marker {
+    body { font-family: sans-serif; background-color: #121212; color: #fff; }
+    #header {
+      padding: 12px;
+      background-color: #1f1f1f;
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
-      transform: translate(-50%, -100%);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
-
-    .snap-label {
-      background: #111;
-      color: #00ff88;
-      font-size: 11px;
-      font-weight: bold;
-      padding: 3px 8px;
-      border-radius: 10px;
-      border: 1px solid #00ff88;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-      white-space: nowrap;
-      margin-bottom: 3px;
-    }
-
-    .snap-dot {
-      width: 16px;
-      height: 16px;
-      background: #007bff;
-      border: 3px solid #ffffff;
-      border-radius: 50%;
-      box-shadow: 0 0 10px #007bff;
-    }
-
-    /* Top Control Panel */
-    .control-panel {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      z-index: 1000;
-      background: rgba(0, 0, 0, 0.85);
-      color: white;
-      padding: 12px 18px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .control-panel input {
-      padding: 6px 10px;
-      border-radius: 6px;
-      border: none;
-      margin-bottom: 8px;
-      width: 100%;
-    }
-
-    .control-panel button {
-      width: 100%;
-      padding: 8px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+    #status { font-size: 14px; color: #888; }
+    #status.active { color: #4CAF50; }
+    #map { height: calc(100vh - 50px); width: 100vw; }
   </style>
 </head>
 <body>
 
-  <div class="control-panel">
-    <input type="text" id="username" placeholder="Enter User ID / Name" />
-    <button onclick="startSharing()">Start Sharing My Location</button>
-    <div id="status" style="margin-top: 8px; font-size: 12px; color: #aaa;">Status: Offline</div>
+  <div id="header">
+    <h3 id="user-name">Tracking User...</h3>
+    <span id="status">● Waiting for live signal...</span>
   </div>
 
   <div id="map"></div>
 
-  <!-- Leaflet & Socket.io JS -->
+  <!-- Leaflet JS Library -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
+  
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <script>
-    const socket = io();
-    const markers = {}; // Stores map markers for every user: { socketId: LeafletMarker }
+    // 1. Initialize Leaflet Map (Default View set to World/Nigeria)
+    const map = L.map('map').setView([6.0050, 7.0815], 13);
 
-    // 1. Initialize Leaflet Map with Esri Satellite Imagery
-    const map = L.map('map', { zoomControl: false }).setView([6.0245, 7.0818], 15);
-
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    // Load OpenStreetMap Tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: 'Esri Satellite'
+      attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // 2. Custom Icon Helper
-    function createCustomIcon(name) {
-      return L.divIcon({
-        className: 'custom-user-icon',
-        html: `
-          <div class="snap-marker">
-            <div class="snap-label">${name}</div>
-            <div class="snap-dot"></div>
-          </div>
-        `,
-        iconSize: [80, 50],
-        iconAnchor: [40, 50]
-      });
-    }
+    let marker = null;
 
-    // 3. Receive initial active users list when connecting
-    socket.on('initial-users', (users) => {
-      Object.values(users).forEach(user => updateUserMarker(user));
-    });
+    // 2. Configure Firebase (Insert your project credentials from Firebase Console)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-    // 4. Update or add a user marker on movement broadcast
-    socket.on('user-moved', (user) => {
-      updateUserMarker(user);
-    });
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    // 5. Remove marker when a user turns off location / closes browser
-    socket.on('user-disconnected', (id) => {
-      if (markers[id]) {
-        map.removeLayer(markers[id]);
-        delete markers[id];
+    // 3. Set the ID of the person you want to track
+    const targetUserId = "Chima Bright Okpalaji";
+
+    // 4. Listen for Real-Time location updates sent by the user
+    db.ref('locations/' + targetUserId).on('value', (snapshot) => {
+      const data = snapshot.val();
+      
+      if (data && data.latitude && data.longitude) {
+        const lat = data.latitude;
+        const lng = data.longitude;
+
+        // Update header status
+        document.getElementById('user-name').innerText = targetUserId;
+        const statusEl = document.getElementById('status');
+        statusEl.innerText = `● Live: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        statusEl.classList.add('active');
+
+        // Create or move the map marker to the new coordinates
+        if (!marker) {
+          marker = L.marker([lat, lng]).addTo(map)
+            .bindPopup(`<b>${targetUserId}</b><br>Live Location`)
+            .openPopup();
+        } else {
+          marker.setLatLng([lat, lng]);
+        }
+
+        // Smoothly center the map on the user's location
+        map.panTo([lat, lng]);
       }
     });
-
-    function updateUserMarker(user) {
-      if (markers[user.id]) {
-        markers[user.id].setLatLng([user.lat, user.lng]);
-      } else {
-        markers[user.id] = L.marker([user.lat, user.lng], {
-          icon: createCustomIcon(user.name)
-        }).addTo(map);
-      }
-    }
-
-    // 6. Broadcast Local Hardware Location
-    function startSharing() {
-      const nameInput = document.getElementById('username').value.trim() || 'Officer/Agent';
-      const status = document.getElementById('status');
-
-      if (!navigator.geolocation) {
-        status.innerText = "Geolocation not supported.";
-        return;
-      }
-
-      status.innerText = "Connecting GPS...";
-
-      navigator.geolocation.watchPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-
-          status.innerText = `🟢 Live: ${lat.toFixed(4)},${lng.toFixed(4)}`;
-
-          // Broadcast to backend server
-          socket.emit('update-location', {
-            name: nameInput,
-            lat: lat,
-            lng: lng
-          });
-        },
-        (err) => { status.innerText = `Error: ${err.message}`; },
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-      );
-    }
   </script>
 </body>
-  </html>
-  
+</html>
