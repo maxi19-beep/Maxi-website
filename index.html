@@ -1,1 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security Multi-User Tracker</title>
 
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { width: 100%; height: 100%; font-family: sans-serif; overflow: hidden; }
+
+    #map { width: 100vw; height: 100vh; background: #121212; }
+
+    /* Snapchat Badge Overlay */
+    .snap-marker {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform: translate(-50%, -100%);
+    }
+
+    .snap-label {
+      background: #111;
+      color: #00ff88;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 3px 8px;
+      border-radius: 10px;
+      border: 1px solid #00ff88;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      white-space: nowrap;
+      margin-bottom: 3px;
+    }
+
+    .snap-dot {
+      width: 16px;
+      height: 16px;
+      background: #007bff;
+      border: 3px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #007bff;
+    }
+
+    /* Top Control Panel */
+    .control-panel {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .control-panel input {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: none;
+      margin-bottom: 8px;
+      width: 100%;
+    }
+
+    .control-panel button {
+      width: 100%;
+      padding: 8px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="control-panel">
+    <input type="text" id="username" placeholder="Enter User ID / Name" />
+    <button onclick="startSharing()">Start Sharing My Location</button>
+    <div id="status" style="margin-top: 8px; font-size: 12px; color: #aaa;">Status: Offline</div>
+  </div>
+
+  <div id="map"></div>
+
+  <!-- Leaflet & Socket.io JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script>
+    const socket = io();
+    const markers = {}; // Stores map markers for every user: { socketId: LeafletMarker }
+
+    // 1. Initialize Leaflet Map with Esri Satellite Imagery
+    const map = L.map('map', { zoomControl: false }).setView([6.0245, 7.0818], 15);
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: 'Esri Satellite'
+    }).addTo(map);
+
+    // 2. Custom Icon Helper
+    function createCustomIcon(name) {
+      return L.divIcon({
+        className: 'custom-user-icon',
+        html: `
+          <div class="snap-marker">
+            <div class="snap-label">${name}</div>
+            <div class="snap-dot"></div>
+          </div>
+        `,
+        iconSize: [80, 50],
+        iconAnchor: [40, 50]
+      });
+    }
+
+    // 3. Receive initial active users list when connecting
+    socket.on('initial-users', (users) => {
+      Object.values(users).forEach(user => updateUserMarker(user));
+    });
+
+    // 4. Update or add a user marker on movement broadcast
+    socket.on('user-moved', (user) => {
+      updateUserMarker(user);
+    });
+
+    // 5. Remove marker when a user turns off location / closes browser
+    socket.on('user-disconnected', (id) => {
+      if (markers[id]) {
+        map.removeLayer(markers[id]);
+        delete markers[id];
+      }
+    });
+
+    function updateUserMarker(user) {
+      if (markers[user.id]) {
+        markers[user.id].setLatLng([user.lat, user.lng]);
+      } else {
+        markers[user.id] = L.marker([user.lat, user.lng], {
+          icon: createCustomIcon(user.name)
+        }).addTo(map);
+      }
+    }
+
+    // 6. Broadcast Local Hardware Location
+    function startSharing() {
+      const nameInput = document.getElementById('username').value.trim() || 'Officer/Agent';
+      const status = document.getElementById('status');
+
+      if (!navigator.geolocation) {
+        status.innerText = "Geolocation not supported.";
+        return;
+      }
+
+      status.innerText = "Connecting GPS...";
+
+      navigator.geolocation.watchPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+
+          status.innerText = `🟢 Live: ${lat.toFixed(4)},${lng.toFixed(4)}`;
+
+          // Broadcast to backend server
+          socket.emit('update-location', {
+            name: nameInput,
+            lat: lat,
+            lng: lng
+          });
+        },
+        (err) => { status.innerText = `Error: ${err.message}`; },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+      );
+    }
+  </script>
+</body>
+  </html>
+  
