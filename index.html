@@ -1,101 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live Location Tracker - Viewer</title>
+import pygame
+import sys
 
-  <!-- Leaflet CSS for Maps -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+pygame.init()
+screen = pygame.display.set_mode((400, 600))
+clock = pygame.time.Clock()
 
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: sans-serif; background-color: #121212; color: #fff; }
-    #header {
-      padding: 12px;
-      background-color: #1f1f1f;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-    }
-    #status { font-size: 14px; color: #888; }
-    #status.active { color: #4CAF50; }
-    #map { height: calc(100vh - 50px); width: 100vw; }
-  </style>
-</head>
-<body>
+# Colors and Road variables
+BG_COLOR = (0, 0, 225)       # Grass green background
+ROAD_COLOR = (255, 0, 0)      # Dark asphalt gray
+LINE_COLOR = (0, 0, 0)   # White lane markings
+road_scroll = 9               # Keeps track of road movement
 
-  <div id="header">
-    <h3 id="user-name">Tracking User...</h3>
-    <span id="status">● Waiting for live signal...</span>
-  </div>
+# Main game loop
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
 
-  <div id="map"></div>
+    # Scroll the road downward to create motion
+    road_scroll = (road_scroll + 5) % 40
 
-  <!-- Leaflet JS Library -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  
-  <!-- Firebase Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    # Draw background and road
+    screen.fill(BG_COLOR)
+    pygame.draw.rect(screen, ROAD_COLOR, (100, 0, 200, 600))
 
-  <script>
-    // 1. Initialize Leaflet Map (Default View set to World/Nigeria)
-    const map = L.map('map').setView([6.0050, 7.0815], 13);
 
-    // Load OpenStreetMap Tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
-    }).addTo(map);
+    # Draw moving white center dashed lane lines
+    for i in range(-40, 640, 40):
+        pygame.draw.rect(screen, LINE_COLOR, (195, i + road_scroll, 10, 20))
 
-    let marker = null;
-
-    // 2. Configure Firebase (Insert your project credentials from Firebase Console)
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // 3. Set the ID of the person you want to track
-    const targetUserId = "Chima Bright Okpalaji";
-
-    // 4. Listen for Real-Time location updates sent by the user
-    db.ref('locations/' + targetUserId).on('value', (snapshot) => {
-      const data = snapshot.val();
-      
-      if (data && data.latitude && data.longitude) {
-        const lat = data.latitude;
-        const lng = data.longitude;
-
-        // Update header status
-        document.getElementById('user-name').innerText = targetUserId;
-        const statusEl = document.getElementById('status');
-        statusEl.innerText = `● Live: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-        statusEl.classList.add('active');
-
-        // Create or move the map marker to the new coordinates
-        if (!marker) {
-          marker = L.marker([lat, lng]).addTo(map)
-            .bindPopup(`<b>${targetUserId}</b><br>Live Location`)
-            .openPopup();
-        } else {
-          marker.setLatLng([lat, lng]);
-        }
-
-        // Smoothly center the map on the user's location
-        map.panTo([lat, lng]);
-      }
-    });
-  </script>
-</body>
-</html>
+    # Refresh screen and cap frame rate
+    pygame.display.flip()
+    clock.tick(60)
