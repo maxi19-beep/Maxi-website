@@ -1,35 +1,465 @@
-import pygame
-import sys
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Routine & Task Manager</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --input-bg: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --high: #ef4444;
+            --medium: #f59e0b;
+            --low: #10b981;
+        }
 
-pygame.init()
-screen = pygame.display.set_mode((400, 600))
-clock = pygame.time.Clock()
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
 
-# Colors and Road variables
-BG_COLOR = (0, 0, 225)       # Grass green background
-ROAD_COLOR = (255, 0, 0)      # Dark asphalt gray
-LINE_COLOR = (0, 0, 0)   # White lane markings
-road_scroll = 9               # Keeps track of road movement
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px 15px;
+        }
 
-# Main game loop
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+        .app-wrapper {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            height: fit-content;
+        }
 
-    # Scroll the road downward to create motion
-    road_scroll = (road_scroll + 5) % 40
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
-    # Draw background and road
-    screen.fill(BG_COLOR)
-    pygame.draw.rect(screen, ROAD_COLOR, (100, 0, 200, 600))
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
 
+        #currentDate {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
 
-    # Draw moving white center dashed lane lines
-    for i in range(-40, 640, 40):
-        pygame.draw.rect(screen, LINE_COLOR, (195, i + road_scroll, 10, 20))
+        /* Progress Bar Section */
+        .progress-container {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
 
-    # Refresh screen and cap frame rate
-    pygame.display.flip()
-    clock.tick(60)
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 10px;
+            background: var(--input-bg);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            transition: width 0.3s ease;
+        }
+
+        /* Input Controls */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"], select {
+            background: var(--input-bg);
+            border: 1px solid transparent;
+            color: var(--text-main);
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--accent);
+        }
+
+        #taskInput {
+            flex: 1;
+        }
+
+        .add-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .add-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Filter Tabs */
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .filter-btn {
+            flex: 1;
+            padding: 8px;
+            background: var(--bg-dark);
+            border: none;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .filter-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Task List */
+        .task-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            background: var(--bg-dark);
+            padding: 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-left: 4px solid var(--accent);
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .task-item.priority-High { border-left-color: var(--high); }
+        .task-item.priority-Medium { border-left-color: var(--medium); }
+        .task-item.priority-Low { border-left-color: var(--low); }
+
+        .task-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 2px solid var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: 0.2s;
+        }
+
+        .task-item.completed .checkbox {
+            background: var(--low);
+            border-color: var(--low);
+        }
+
+        .task-item.completed .checkbox::after {
+            content: "✓";
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .task-text-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .task-title {
+            font-size: 0.95rem;
+            word-break: break-word;
+            transition: 0.2s;
+        }
+
+        .task-item.completed .task-title {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-High { color: var(--high); }
+        .badge-Medium { color: var(--medium); }
+        .badge-Low { color: var(--low); }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .delete-btn:hover {
+            color: var(--high);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 25px 0;
+        }
+
+        .clear-completed {
+            width: 100%;
+            margin-top: 16px;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid var(--input-bg);
+            color: var(--text-muted);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .clear-completed:hover {
+            border-color: var(--high);
+            color: var(--high);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <header>
+            <div>
+                <h1>Daily Routine</h1>
+                <p id="currentDate"></p>
+            </div>
+        </header>
+
+        <!-- Live Progress Tracker -->
+        <div class="progress-container">
+            <div class="progress-header">
+                <span id="progressText">0 of 0 tasks completed</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <!-- Add Task Form -->
+        <div class="input-group">
+            <input type="text" id="taskInput" placeholder="What do you need to get done?" onkeypress="handleEnter(event)">
+            <div class="input-row">
+                <select id="prioritySelect" style="flex: 1;">
+                    <option value="High">High Priority</option>
+                    <option value="Medium" selected>Medium Priority</option>
+                    <option value="Low">Low Priority</option>
+                </select>
+                <button class="add-btn" onclick="addTask()">+ Add Task</button>
+            </div>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="filters">
+            <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+            <button class="filter-btn" onclick="setFilter('pending', this)">Pending</button>
+            <button class="filter-btn" onclick="setFilter('completed', this)">Completed</button>
+        </div>
+
+        <!-- Tasks Display -->
+        <ul class="task-list" id="taskList"></ul>
+
+        <button class="clear-completed" onclick="clearCompleted()">Clear Completed Tasks</button>
+    </div>
+
+    <script>
+        // Display today's date
+        const dateOptions = { weekday: 'long', month: 'short', day: 'numeric' };
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-US', dateOptions);
+
+        // Load saved tasks from browser storage or start with 2 sample tasks
+        let tasks = JSON.parse(localStorage.getItem('myRoutineTasks')) || [
+            { id: 1, text: "Morning workout & core session", priority: "High", completed: false },
+            { id: 2, text: "Review HTML & JavaScript code", priority: "Medium", completed: true }
+        ];
+
+        let currentFilter = 'all';
+
+        function saveTasks() {
+            localStorage.setItem('myRoutineTasks', JSON.stringify(tasks));
+        }
+
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const priority = document.getElementById('prioritySelect').value;
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            const newTask = {
+                id: Date.now(),
+                text: text,
+                priority: priority,
+                completed: false
+            };
+
+            tasks.unshift(newTask);
+            input.value = '';
+            saveTasks();
+            renderTasks();
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                addTask();
+            }
+        }
+
+        function toggleTask(id) {
+            tasks = tasks.map(task => 
+                task.id === id ? { ...task, completed: !task.completed } : task
+            );
+            saveTasks();
+            renderTasks();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            saveTasks();
+            renderTasks();
+        }
+
+        function clearCompleted() {
+            tasks = tasks.filter(task => !task.completed);
+            saveTasks();
+            renderTasks();
+        }
+
+        function setFilter(filterType, btnElement) {
+            currentFilter = filterType;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            renderTasks();
+        }
+
+        function updateProgress() {
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.completed).length;
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+            document.getElementById('progressText').innerText = `${completed} of ${total} tasks completed`;
+            document.getElementById('progressPercent').innerText = `${percent}%`;
+            document.getElementById('progressBar').style.width = `${percent}%`;
+        }
+
+        function renderTasks() {
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+
+            const filteredTasks = tasks.filter(task => {
+                if (currentFilter === 'pending') return !task.completed;
+                if (currentFilter === 'completed') return task.completed;
+                return true;
+            });
+
+            if (filteredTasks.length === 0) {
+                list.innerHTML = `<li class="empty-msg">No tasks in this view.</li>`;
+            } else {
+                filteredTasks.forEach(task => {
+                    const li = document.createElement('li');
+                    li.className = `task-item priority-${task.priority} ${task.completed ? 'completed' : ''}`;
+                    
+                    li.innerHTML = `
+                        <div class="task-left" onclick="toggleTask(${task.id})">
+                            <div class="checkbox"></div>
+                            <div class="task-text-box">
+                                <span class="task-title">${task.text}</span>
+                                <span class="badge badge-${task.priority}">${task.priority}</span>
+                            </div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteTask(${task.id})" title="Delete">✕</button>
+                    `;
+                    list.appendChild(li);
+                });
+            }
+
+            updateProgress();
+        }
+
+        // Initial render on page load
+        renderTasks();
+    </script>
+</body>
+    </html>
+    
